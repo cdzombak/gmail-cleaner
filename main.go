@@ -51,7 +51,7 @@ func Main() error {
 
 	searchQ := fmt.Sprintf("label:\"%s\" older_than:%s -is:starred", *labelName, *olderThanSearch)
 	if *excludeSearch != "" {
-		searchQ = fmt.Sprintf("%s -(%s)", searchQ, *excludeSearch)
+		searchQ = fmt.Sprintf("%s -{%s}", searchQ, *excludeSearch)
 	}
 	log.Printf("search query: \"%s\"\n", searchQ)
 	log.Printf("gmail search: https://mail.google.com/mail/#search/%s\n", url.QueryEscape(searchQ))
