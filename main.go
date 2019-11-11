@@ -49,7 +49,7 @@ func Main() error {
 		return err
 	}
 
-	searchQ := fmt.Sprintf("label:\"%s\" older_than:%s", *labelName, *olderThanSearch)
+	searchQ := fmt.Sprintf("label:\"%s\" older_than:%s -is:starred", *labelName, *olderThanSearch)
 	if *excludeSearch != "" {
 		searchQ = fmt.Sprintf("%s -(%s)", searchQ, *excludeSearch)
 	}
