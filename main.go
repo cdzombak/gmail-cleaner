@@ -40,8 +40,8 @@ func Main() error {
 		return errors.New("argument 'older' must be of the form '\\d[ymd]'")
 	}
 
-	if strings.Contains(*excludeSearch, ")") {
-		return errors.New("argument 'exclude' must not contain closing parens")
+	if strings.Contains(*excludeSearch, "{") || strings.Contains(*excludeSearch, "}") {
+		return errors.New("argument 'exclude' must not contain braces ({})")
 	}
 
 	srv, err := buildGmailService()
