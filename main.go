@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -20,12 +21,14 @@ var (
 	excludeSearch   = flag.String("exclude", "", "Additional Gmail-style search string specifying results to exclude.")
 	searchCap       = flag.Int64("cap", 500, "Cap on the number of emails to trash. If the (estimated) result count exceeds this, no data will be modified.")
 	actuallyTrash   = flag.Bool("trash", false, "Whether to actually trash discovered threads. By default, no data will be modified.")
+	configDir       = flag.String("configDir", "", "Path to a directory where credentials & tokens are stored. Overrides environment variable GMAIL_CLEANER_CONFIG_DIR.")
 )
 
 func Main() error {
 	flag.Parse()
 
 	if *labelName == "" {
+		flag.PrintDefaults()
 		return errors.New("argument 'label' is required")
 	}
 	if strings.Contains(*labelName, "\"") {
@@ -33,6 +36,7 @@ func Main() error {
 	}
 
 	if *olderThanSearch == "" {
+		flag.PrintDefaults()
 		return errors.New("argument 'older' is required")
 	}
 	olderThanRegex := regexp.MustCompile("\\A\\d+[ymd]\\z")
@@ -42,6 +46,13 @@ func Main() error {
 
 	if strings.Contains(*excludeSearch, "{") || strings.Contains(*excludeSearch, "}") {
 		return errors.New("argument 'exclude' must not contain braces ({})")
+	}
+
+	if *configDir != "" {
+		_ = os.Setenv("GMAIL_CLEANER_CONFIG_DIR", *configDir)
+	} else if os.Getenv("GMAIL_CLEANER_CONFIG_DIR") == "" {
+		flag.PrintDefaults()
+		return errors.New("argument 'configDir' is required (if not using environment variable GMAIL_CLEANER_CONFIG_DIR)")
 	}
 
 	srv, err := buildGmailService()
@@ -120,6 +131,6 @@ func Main() error {
 
 func main() {
 	if err := Main(); err != nil {
-		log.Fatalf("%s", err)
+		log.Fatalf(err.Error())
 	}
 }
