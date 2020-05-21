@@ -1,10 +1,15 @@
 .PHONY: all
-all: build-linux-amd64
+all: clean build-linux-amd64 build-darwin-amd64
 
 .PHONY: build-linux-amd64
-build-linux-amd64: clean
-	mkdir -p out
-	env GOOS=linux GOARCH=amd64 go build -o ./out/gmail-cleaner .
+build-linux-amd64:
+	mkdir -p out/linux-amd64
+	env GOOS=linux GOARCH=amd64 go build -o ./out/linux-amd64/gmail-cleaner .
+
+.PHONY: build-darwin-amd64
+build-darwin-amd64:
+	mkdir -p out/darwin-amd64
+	env GOOS=darwin GOARCH=amd64 go build -o ./out/darwin-amd64/gmail-cleaner .
 
 .PHONY: clean
 clean:
