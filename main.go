@@ -16,13 +16,14 @@ import (
 )
 
 var (
-	labelName       = flag.String("label", "", "Label to clean (required)")
-	olderThanSearch = flag.String("older", "", "Gmail-style \"older than\" search string (eg. '1y' for 1 year, '3m' for 3 months) (required)")
-	excludeSearch   = flag.String("exclude", "", "Additional Gmail-style search string specifying results to exclude.")
-	searchCap       = flag.Int64("cap", 500, "Cap on the number of emails to trash. If the (estimated) result count exceeds this, no data will be modified.")
-	configDir       = flag.String("configDir", "", "Path to a directory where credentials & tokens are stored. Overrides environment variable GMAIL_CLEANER_CONFIG_DIR.")
+	labelName          = flag.String("label", "", "Label to clean (required)")
+	includeSpamTrash   = flag.Bool("include-spam-trash", false, "Whether to include threads in Spam and Trash in the search.")
+	olderThanSearch    = flag.String("older", "", "Gmail-style \"older than\" search string (eg. '1y' for 1 year, '3m' for 3 months) (required)")
+	excludeSearch      = flag.String("exclude", "", "Additional Gmail-style search string specifying results to exclude.")
+	searchCap          = flag.Int64("cap", 500, "Cap on the number of emails to trash. If the (estimated) result count exceeds this, no data will be modified.")
 	actuallyTrash      = flag.Bool("trash", false, "Whether to trash discovered threads. By default, no data will be modified.")
 	irreversiblyDelete = flag.Bool("irreversibly-delete", false, "Whether to irreversibly delete discovered threads. You should probably use -trash instead. By default, no data will be modified.")
+	configDir          = flag.String("configDir", "", "Path to a directory where credentials & tokens are stored. Overrides environment variable GMAIL_CLEANER_CONFIG_DIR.")
 )
 
 func Main() error {
@@ -75,7 +76,7 @@ func Main() error {
 	ctx := context.Background()
 	var threadIds []string
 
-	if err = srv.Users.Threads.List("me").IncludeSpamTrash(false).Q(searchQ).Context(ctx).Pages(ctx, func(response *gmail.ListThreadsResponse) error {
+	if err = srv.Users.Threads.List("me").IncludeSpamTrash(*includeSpamTrash).Q(searchQ).Context(ctx).Pages(ctx, func(response *gmail.ListThreadsResponse) error {
 		if response.ResultSizeEstimate > *searchCap {
 			return fmt.Errorf("too many results! estimated result count %d is above cap %d", response.ResultSizeEstimate, *searchCap)
 		}
