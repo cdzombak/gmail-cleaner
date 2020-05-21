@@ -20,12 +20,17 @@ var (
 	olderThanSearch = flag.String("older", "", "Gmail-style \"older than\" search string (eg. '1y' for 1 year, '3m' for 3 months) (required)")
 	excludeSearch   = flag.String("exclude", "", "Additional Gmail-style search string specifying results to exclude.")
 	searchCap       = flag.Int64("cap", 500, "Cap on the number of emails to trash. If the (estimated) result count exceeds this, no data will be modified.")
-	actuallyTrash   = flag.Bool("trash", false, "Whether to actually trash discovered threads. By default, no data will be modified.")
 	configDir       = flag.String("configDir", "", "Path to a directory where credentials & tokens are stored. Overrides environment variable GMAIL_CLEANER_CONFIG_DIR.")
+	actuallyTrash      = flag.Bool("trash", false, "Whether to trash discovered threads. By default, no data will be modified.")
+	irreversiblyDelete = flag.Bool("irreversibly-delete", false, "Whether to irreversibly delete discovered threads. You should probably use -trash instead. By default, no data will be modified.")
 )
 
 func Main() error {
 	flag.Parse()
+
+	if *actuallyTrash && *irreversiblyDelete {
+		return errors.New("only one of -trash or -irreversibly-delete may be used")
+	}
 
 	if *labelName == "" {
 		flag.PrintDefaults()
@@ -83,8 +88,10 @@ func Main() error {
 	}
 
 	log.Printf("found %d threads to trash\n", len(threadIds))
-	if !*actuallyTrash {
-		log.Println("not actually trashing anything (flag -trash is missing)")
+	if !*actuallyTrash && !*irreversiblyDelete {
+		log.Println("not actually trashing anything (flags -trash or -irreversibly-delete are missing)")
+	} else if !*irreversiblyDelete {
+		log.Println("matching threads will be irreversibly deleted, not moved to trash (flag -irreversibly-delete is present)")
 	}
 	threadsTrashed := 0
 
@@ -122,10 +129,23 @@ func Main() error {
 				return fmt.Errorf("unable to trash thread \"%s\": %w", subject, err)
 			}
 			threadsTrashed++
+		} else if *irreversiblyDelete {
+			err = srv.Users.Threads.Delete("me", tId).Context(ctx).Do()
+			if err != nil {
+				log.Printf("irreversibly deleted %d threads.\n", threadsTrashed)
+				return fmt.Errorf("unable to delete thread \"%s\": %w", subject, err)
+			}
+			threadsTrashed++
 		}
 	}
 
-	log.Printf("trashed %d threads.\n", threadsTrashed)
+	if *actuallyTrash {
+		log.Printf("trashed %d threads.\n", threadsTrashed)
+	} else if *irreversiblyDelete {
+		log.Printf("irreversibly deleted %d threads.\n", threadsTrashed)
+	} else {
+		log.Printf("matched %d threads, but did not trash any (flag -trash is not present).\n", threadsTrashed)
+	}
 	return nil
 }
 

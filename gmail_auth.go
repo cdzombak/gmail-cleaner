@@ -32,7 +32,12 @@ func buildGmailService() (*gmail.Service, error) {
 	if err != nil {
 		return nil, fmt.Errorf("unable to read client credentials file (credentials.json): %w", err)
 	}
-	config, err := google.ConfigFromJSON(b, gmail.GmailModifyScope) // If modifying these scopes, delete any previously saved token.json.
+	scope := gmail.GmailModifyScope
+	if os.Getenv("GMAIL_REQUEST_DANGEROUS_FULL_AUTH_SCOPE") == "true" {
+		// leaving this option undocumented because it's dangerous
+		scope = gmail.MailGoogleComScope
+	}
+	config, err := google.ConfigFromJSON(b, scope) // If modifying these scopes, delete any previously saved token.json.
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse client secret file to config: %w", err)
 	}
