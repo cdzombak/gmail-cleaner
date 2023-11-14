@@ -1,0 +1,6 @@
+-s dir
+--name gmail-cleaner
+--description "Delete old messages in a chosen label from your Gmail account"
+--url "https://github.com/cdzombak/gmail-cleaner"
+--maintainer "Chris Dzombak <https://www.dzombak.com>"
+--license LGPL-3.0

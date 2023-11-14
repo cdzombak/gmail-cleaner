@@ -15,6 +15,8 @@ import (
 	"google.golang.org/api/gmail/v1"
 )
 
+var version = "<dev>"
+
 var (
 	labelName          = flag.String("label", "", "Label to clean (required)")
 	includeSpamTrash   = flag.Bool("include-spam-trash", false, "Whether to include threads in Spam and Trash in the search.")
@@ -23,11 +25,18 @@ var (
 	searchCap          = flag.Int64("cap", 500, "Cap on the number of emails to trash. If the (estimated) result count exceeds this, no data will be modified.")
 	actuallyTrash      = flag.Bool("trash", false, "Whether to trash discovered threads. By default, no data will be modified.")
 	irreversiblyDelete = flag.Bool("irreversibly-delete", false, "Whether to irreversibly delete discovered threads. You should probably use -trash instead. By default, no data will be modified.")
-	configDir          = flag.String("configDir", "", "Path to a directory where credentials & tokens are stored. Overrides environment variable GMAIL_CLEANER_CONFIG_DIR.")
+	configDir          = flag.String("configDir", "", "Path to a directory where credentials & user authorization tokens are stored. Overrides environment variable GMAIL_CLEANER_CONFIG_DIR.")
+	printVersionFlag   = flag.Bool("version", false, "Print version and exit.")
 )
 
+// Main implements the core gmail-cleaner program
 func Main() error {
 	flag.Parse()
+
+	if *printVersionFlag {
+		fmt.Println(version)
+		os.Exit(0)
+	}
 
 	if *actuallyTrash && *irreversiblyDelete {
 		return errors.New("only one of -trash or -irreversibly-delete may be used")
@@ -45,7 +54,7 @@ func Main() error {
 		flag.PrintDefaults()
 		return errors.New("argument 'older' is required")
 	}
-	olderThanRegex := regexp.MustCompile("\\A\\d+[ymd]\\z")
+	olderThanRegex := regexp.MustCompile(`\A\d+[ymd]\z`)
 	if !olderThanRegex.MatchString(*olderThanSearch) {
 		return errors.New("argument 'older' must be of the form '\\d[ymd]'")
 	}
@@ -96,8 +105,8 @@ func Main() error {
 	}
 	threadsTrashed := 0
 
-	for _, tId := range threadIds {
-		t, err := srv.Users.Threads.Get("me", tId).Context(ctx).Do()
+	for _, tID := range threadIds {
+		t, err := srv.Users.Threads.Get("me", tID).Context(ctx).Do()
 		if err != nil {
 			return err
 		}
@@ -124,14 +133,14 @@ func Main() error {
 		log.Printf("\"%s\" (%s, %d messages)\n", subject, msgTime.Format("2006-01-02"), msgCount)
 
 		if *actuallyTrash {
-			_, err = srv.Users.Threads.Trash("me", tId).Context(ctx).Do()
+			_, err = srv.Users.Threads.Trash("me", tID).Context(ctx).Do()
 			if err != nil {
 				log.Printf("trashed %d threads.\n", threadsTrashed)
 				return fmt.Errorf("unable to trash thread \"%s\": %w", subject, err)
 			}
 			threadsTrashed++
 		} else if *irreversiblyDelete {
-			err = srv.Users.Threads.Delete("me", tId).Context(ctx).Do()
+			err = srv.Users.Threads.Delete("me", tID).Context(ctx).Do()
 			if err != nil {
 				log.Printf("irreversibly deleted %d threads.\n", threadsTrashed)
 				return fmt.Errorf("unable to delete thread \"%s\": %w", subject, err)
