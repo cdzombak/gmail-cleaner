@@ -86,9 +86,7 @@ This example uses my [`runner` tool](https://github.com/cdzombak/runner) ([intro
 
 ## Docker
 
-> TODO(cdzombak): links
-
-Images are based on the `scratch` image and are as small as possible.
+Docker images are available for a variety of Linux architectures from [Docker Hub](https://hub.docker.com/r/cdzombak/gmail-cleaner) and [GHCR](https://github.com/cdzombak/gmail-cleaner/pkgs/container/gmail-cleaner). Images are based on the `scratch` image and are as small as possible.
 
 Run them via, for example:
 
