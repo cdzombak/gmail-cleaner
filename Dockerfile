@@ -1,7 +1,7 @@
 ARG BIN_NAME=gmail-cleaner
 ARG BIN_VERSION=<unknown>
 
-FROM golang:1 AS builder
+FROM golang:1-alpine AS builder
 ARG BIN_NAME
 ARG BIN_VERSION
 
