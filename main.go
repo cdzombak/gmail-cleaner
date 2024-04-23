@@ -83,21 +83,21 @@ func Main() error {
 	log.Printf("gmail search: https://mail.google.com/mail/#search/%s\n", url.QueryEscape(searchQ))
 
 	ctx := context.Background()
-	var threadIds []string
+	var threadIDs []string
 
 	if err = srv.Users.Threads.List("me").IncludeSpamTrash(*includeSpamTrash).Q(searchQ).Context(ctx).Pages(ctx, func(response *gmail.ListThreadsResponse) error {
 		if response.ResultSizeEstimate > *searchCap {
 			return fmt.Errorf("too many results! estimated result count %d is above cap %d", response.ResultSizeEstimate, *searchCap)
 		}
 		for _, t := range response.Threads {
-			threadIds = append(threadIds, t.Id)
+			threadIDs = append(threadIDs, t.Id)
 		}
 		return nil
 	}); err != nil {
 		return fmt.Errorf("error searching for messages to trash: %w", err)
 	}
 
-	log.Printf("found %d threads to trash\n", len(threadIds))
+	log.Printf("found %d threads to trash\n", len(threadIDs))
 	if !*actuallyTrash && !*irreversiblyDelete {
 		log.Println("not actually trashing anything (flags -trash or -irreversibly-delete are missing)")
 	} else if !*irreversiblyDelete {
@@ -105,7 +105,7 @@ func Main() error {
 	}
 	threadsTrashed := 0
 
-	for _, tID := range threadIds {
+	for _, tID := range threadIDs {
 		t, err := srv.Users.Threads.Get("me", tID).Context(ctx).Do()
 		if err != nil {
 			return err
