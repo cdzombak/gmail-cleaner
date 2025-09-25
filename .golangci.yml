@@ -3,17 +3,6 @@
 ---
 version: 2
 
-linters:
-  disable-all: true
-  enable:
-    - gofmt
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
-
 linters-settings:
   gocritic:
     disabled-checks:
