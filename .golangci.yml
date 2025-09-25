@@ -1,6 +1,8 @@
 # https://megalinter.io/latest/descriptors/go_golangci_lint/
 # https://github.com/oxsecurity/megalinter/blob/main/TEMPLATES/.golangci.yml
 ---
+version: 2
+
 linters:
   disable-all: true
   enable:
