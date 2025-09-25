@@ -1,16 +1,7 @@
 # https://megalinter.io/latest/descriptors/go_golangci_lint/
 # https://github.com/oxsecurity/megalinter/blob/main/TEMPLATES/.golangci.yml
 ---
-linters:
-  disable-all: true
-  enable:
-    - gofmt
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - typecheck
-    - unused
+version: 2
 
 linters-settings:
   gocritic:
