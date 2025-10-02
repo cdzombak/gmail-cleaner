@@ -161,6 +161,6 @@ func Main() error {
 
 func main() {
 	if err := Main(); err != nil {
-		log.Fatalf(err.Error())
+		log.Fatal(err.Error())
 	}
 }
